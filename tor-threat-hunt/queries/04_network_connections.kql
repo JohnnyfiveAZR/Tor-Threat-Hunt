@@ -1,0 +1,48 @@
+// ============================================================
+// Query 04 — Tor Network Connections
+// Table: DeviceNetworkEvents
+// Purpose: Detect outbound connections on known Tor ports
+//          initiated by tor.exe or firefox.exe, confirming
+//          that the Tor Browser successfully connected to
+//          the Tor anonymization network.
+// ============================================================
+
+DeviceNetworkEvents
+| where DeviceName == "threat-hunt-lab"
+| where InitiatingProcessAccountName != "system"
+| where RemotePort in (
+    "9001",   // Tor OR (Onion Router) relay port — PRIMARY INDICATOR
+    "9030",   // Tor directory service
+    "9040",   // Tor transparent proxy
+    "9050",   // Tor SOCKS proxy (default client)
+    "9051",   // Tor control port
+    "9150"    // Tor Browser SOCKS proxy
+)
+| order by Timestamp asc
+| project
+    Timestamp,
+    DeviceName,
+    InitiatingProcessAccountDomain,
+    ActionType,
+    RemoteIP,
+    RemotePort,
+    RemoteUrl,
+    InitiatingProcessFileName,
+    InitiatingProcessFolderPath
+
+// ============================================================
+// Expected Results:
+//   Outbound ConnectionSuccess events to external IPs on 9001
+//   from tor.exe — confirms live Tor relay connections.
+//
+//   ConnectionSuccess to 127.0.0.1:9150 from firefox.exe
+//   confirms the browser is routing traffic through Tor.
+//
+// Relay nodes observed:
+//   87.98.237.152   port 9001  (May 4)
+//   192.34.87.86    port 9001  (May 4)
+//   144.217.90.187  port 9001  (Apr 29)
+//   86.121.35.224   port 9001  (Apr 29)
+//   65.21.49.9      port 9001  (Apr 14)
+//   45.157.234.132  port 9001  (Apr 14)
+// ============================================================

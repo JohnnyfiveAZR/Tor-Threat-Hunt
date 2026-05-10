@@ -1,0 +1,44 @@
+// ============================================================
+// Query 03 — Tor Browser Process Execution
+// Table: DeviceProcessEvents
+// Purpose: Detect execution of core Tor Browser processes:
+//          tor.exe  — the Tor routing engine
+//          firefox.exe — the Tor Browser UI (modified Firefox)
+//          snowflake-proxy.exe — pluggable transport (if used)
+//
+//          Multiple firefox.exe content processes indicate
+//          active browsing tabs.
+// ============================================================
+
+DeviceProcessEvents
+| where DeviceName == "threat-hunt-lab"
+| where FileName has_any ("firefox.exe", "tor.exe", "snowflake-proxy.exe")
+// Filter to processes running from the Tor Browser directory
+// to avoid flagging legitimate Firefox installations
+| where FolderPath contains "Tor Browser"
+    or FolderPath contains "TorBrowser"
+    or ProcessCommandLine contains "torrc"
+| order by Timestamp asc
+| project
+    Timestamp,
+    DeviceName,
+    AccountName,
+    ActionType,
+    FileName,
+    FolderPath,
+    SHA256,
+    ProcessCommandLine
+
+// ============================================================
+// Key Indicators in Results:
+//   tor.exe with -f torrc argument     → Tor engine started
+//   tor.exe with SocksPort 9150        → SOCKS proxy active
+//   tor.exe with ControlPort 9151      → Control port active
+//   firefox.exe from \Tor Browser\     → Browser UI running
+//   firefox.exe -contentproc N tab     → Active tab (N = tab #)
+//
+// Sessions identified:
+//   Apr 14, 2026 08:44 AM  — employee   (10+ tabs)
+//   Apr 29, 2026 03:57 PM  — johnnynet1 (browser launched)
+//   May 04, 2026 10:46 AM  — employee   (20+ tabs)
+// ============================================================

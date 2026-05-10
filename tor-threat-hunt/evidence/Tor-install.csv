@@ -1,0 +1,2 @@
+﻿Timestamp,DeviceName,AccountName,ActionType,ProcessCreationTime,FileName,FolderPath,SHA256,ProcessCommandLine
+"Apr 29, 2026 3:57:39 PM",threat-hunt-lab,johnnynet1,ProcessCreated,"Apr 29, 2026 3:57:39 PM",firefox.exe,C:\Users\JohnnyNet1\Desktop\Tor Browser\Browser\firefox.exe,cc24a3b8e51a8301f65fe06335ec65a95b9076d4784dfbae0a6adac0f025bfaa,firefox.exe

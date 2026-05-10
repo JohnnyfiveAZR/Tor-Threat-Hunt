@@ -1,0 +1,34 @@
+// ============================================================
+// Query 01 — Tor-Related File Events
+// Table: DeviceFileEvents
+// Purpose: Identify any file creation or deletion events
+//          containing "tor" in the filename on the target device.
+//          This surfaces the installer download, extraction of
+//          Tor Browser files to the Desktop, and deletion of
+//          the installer post-extraction.
+// ============================================================
+
+DeviceFileEvents
+| where DeviceName == "threat-hunt-lab"
+| where InitiatingProcessAccountName == "johnnynet1"
+    or InitiatingProcessAccountName == "employee"
+| where FileName contains "tor"
+| where Timestamp >= datetime(2026-04-14T00:00:00Z)
+| order by Timestamp asc
+| project
+    Timestamp,
+    DeviceName,
+    ActionType,
+    FileName,
+    FolderPath,
+    SHA256,
+    Account = InitiatingProcessAccountName
+
+// ============================================================
+// Expected Results:
+//   - tor-browser-windows-x86_64-portable-15.0.11.exe (FileCreated → Downloads)
+//   - tor-browser-windows-x86_64-portable-15.0.11.exe (FileDeleted → Downloads)
+//   - tor.exe (FileCreated → Desktop\Tor Browser\...)
+//   - Tor Browser.lnk (FileCreated → Desktop + Start Menu)
+//   - Tor-shopping-list.txt.txt (FileCreated → Desktop)  ← HIGH INTEREST
+// ============================================================

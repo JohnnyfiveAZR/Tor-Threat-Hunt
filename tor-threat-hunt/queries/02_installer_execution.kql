@@ -1,0 +1,31 @@
+// ============================================================
+// Query 02 — Tor Browser Installer Execution
+// Table: DeviceProcessEvents
+// Purpose: Detect the explicit launch of the Tor Browser
+//          portable installer. This confirms the user
+//          manually executed the installer rather than
+//          it being deployed by IT or a script.
+// ============================================================
+
+DeviceProcessEvents
+| where DeviceName == "threat-hunt-lab"
+| where InitiatingProcessCommandLine contains "tor-browser-windows-x86_64-portable-15.0.11.exe"
+| order by Timestamp asc
+| project
+    Timestamp,
+    DeviceName,
+    AccountName,
+    ActionType,
+    ProcessCreationTime,
+    FileName,
+    FolderPath,
+    SHA256,
+    ProcessCommandLine
+
+// ============================================================
+// Expected Results:
+//   - firefox.exe spawned from the portable installer at
+//     2026-04-29T22:57:39Z by johnnynet1
+//   - Confirms manual, interactive execution of installer
+//     directly from the Desktop
+// ============================================================
